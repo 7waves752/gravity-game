@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Онлайн Крестики-Нолики с Гравитацией</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+
+        /* Экран выбора режима */
+        .mode-selection {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .mode-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            padding: 20px 40px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+
+        .create-room-btn {
+            background: #667eea;
+            color: white;
+        }
+
+        .create-room-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .join-room-btn {
+            background: #4ecdc4;
+            color: white;
+        }
+
+        .join-room-btn:hover {
+            background: #45b8b0;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        /* Экран ввода комнаты */
+        .join-room-screen {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .room-input-group {
+            margin: 30px 0;
+        }
+
+        .room-input {
+            padding: 15px;
+            font-size: 1.2em;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .room-input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+        }
+
+        .join-btn {
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-weight: bold;
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .join-btn:hover {
+            background: #45b8b0;
+            transform: translateY(-2px);
+        }
+
+        .back-btn {
+            padding: 10px 30px;
+            font-size: 1em;
+            background: #ddd;
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #ccc;
+        }
+
+        /* Экран ожидания */
+        .waiting-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .room-code {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 20px 40px;
+            border-radius: 10px;
+            font-size: 2em;
+            font-weight: bold;
+            letter-spacing: 5px;
+            color: #667eea;
+            margin: 20px 0;
+            border: 3px dashed #667eea;
+        }
+
+        .share-link {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            word-break: break-all;
+            font-family: monospace;
+            border: 1px solid #ddd;
+        }
+
+        .copy-btn {
+            padding: 10px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #5568d3;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px 0;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Игровой экран */
+        .game-screen {
+            display: none;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .player-info {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .player-role {
+            font-size: 1.3em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .role-badge {
+            display: inline-block;
+            width: 35px;
+            height: 35px;
+            line-height: 35px;
+            text-align: center;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .role-x {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .role-o {
+            background: #4ecdc4;
+            color: white;
+        }
+
+        .current-turn {
+            font-size: 1.1em;
+            color: #666;
+        }
+
+        .status-indicator {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .status-your-turn {
+            background: #4ecdc4;
+            color: white;
+            animation: pulse 1.5s ease infinite;
+        }
+
+        .status-opponent-turn {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .move-preview {
+            text-align: center;
+            margin-bottom: 20px;
+            min-height: 60px;
+        }
+
+        .preview-info {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .confirm-move-btn {
+            padding: 12px 40px;
+            font-size: 1.1em;
+            font-weight: bold;
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: pulse 1.5s ease infinite;
+        }
+
+        .confirm-move-btn:hover {
+            background: #45b8b0;
+            transform: translateY(-2px);
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 4px;
+            background: #ddd;
+            padding: 4px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cell.preview {
+            background: #ffe066 !important;
+            color: #333;
+            animation: previewPulse 0.8s ease infinite;
+        }
+
+        @keyframes previewPulse {
+            0%, 100% {
+                opacity: 0.7;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            background: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5em;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cell:hover:not(.filled):not(.disabled) {
+            background: #f0f0f0;
+            transform: scale(1.05);
+        }
+
+        .cell.filled {
+            cursor: not-allowed;
+        }
+
+        .cell.disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .cell.x {
+            background: #ff6b6b;
+            color: white;
+            animation: dropIn 0.3s ease;
+        }
+
+        .cell.o {
+            background: #4ecdc4;
+            color: white;
+            animation: dropIn 0.3s ease;
+        }
+
+        .cell.winning {
+            animation: winPulse 0.6s ease infinite;
+        }
+
+        @keyframes dropIn {
+            0% {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+            50% {
+                transform: translateY(5px);
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes winPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 rgba(255, 215, 0, 0.7);
+            }
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.9);
+            }
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .reset-btn {
+            padding: 12px 30px;
+            font-size: 1em;
+            font-weight: bold;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .reset-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .leave-btn {
+            padding: 12px 30px;
+            font-size: 1em;
+            font-weight: bold;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .leave-btn:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #667eea;
+            min-height: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.win {
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .message.lose {
+            color: #ff6b6b;
+        }
+
+        .message.draw {
+            color: #ff6b6b;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .cell {
+                font-size: 1.2em;
+            }
+
+            .mode-btn {
+                min-width: 150px;
+                padding: 15px 30px;
+            }
+
+            .room-code {
+                font-size: 1.5em;
+                padding: 15px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Онлайн Крестики-Нолики</h1>
+        <div class="subtitle">С гравитацией • Соберите 4 в ряд!</div>
+
+        <!-- Экран выбора режима -->
+        <div id="modeSelection" class="mode-selection">
+            <h2 style="margin-bottom: 20px;">Выберите режим игры</h2>
+            <div class="mode-buttons">
+                <button class="mode-btn create-room-btn" onclick="createRoom()">
+                    🎯 Создать игру
+                </button>
+                <button class="mode-btn join-room-btn" onclick="showJoinScreen()">
+                    🔗 Присоединиться
+                </button>
+            </div>
+        </div>
+
+        <!-- Экран ввода кода комнаты -->
+        <div id="joinRoomScreen" class="join-room-screen hidden">
+            <h2>Введите код комнаты</h2>
+            <div class="room-input-group">
+                <input type="text" id="roomCodeInput" class="room-input" placeholder="ABC123" maxlength="6">
+            </div>
+            <button class="join-btn" onclick="joinRoom()">Присоединиться</button>
+            <br>
+            <button class="back-btn" onclick="showModeSelection()">← Назад</button>
+        </div>
+
+        <!-- Экран ожидания игрока -->
+        <div id="waitingScreen" class="waiting-screen hidden">
+            <h2>Ожидание второго игрока...</h2>
+            <div class="spinner"></div>
+            <p style="margin: 20px 0;">Код комнаты:</p>
+            <div class="room-code" id="displayRoomCode"></div>
+            <p style="margin: 20px 0;">Отправьте эту ссылку другу:</p>
+            <div class="share-link" id="shareLink"></div>
+            <button class="copy-btn" onclick="copyLink(event)">📋 Скопировать ссылку</button>
+            <br>
+            <button class="back-btn" style="margin-top: 30px;" onclick="leaveRoom()">← Отмена</button>
+        </div>
+
+        <!-- Игровой экран -->
+        <div id="gameScreen" class="game-screen">
+            <div class="game-info">
+                <div class="player-info">
+                    <div class="player-role">
+                        <span>Вы играете:</span>
+                        <span class="role-badge" id="playerRoleBadge"></span>
+                    </div>
+                    <div class="current-turn" id="turnInfo"></div>
+                </div>
+                <div class="status-indicator" id="statusIndicator"></div>
+            </div>
+
+            <div class="board" id="board"></div>
+
+            <div class="move-preview" id="movePreview">
+                <div class="preview-info" id="previewInfo">Выберите колонку для хода</div>
+                <button class="confirm-move-btn hidden" id="confirmMoveBtn" onclick="confirmMove()">
+                    ✓ Подтвердить ход
+                </button>
+            </div>
+
+            <div class="controls">
+                <button class="reset-btn" onclick="resetGame()">🔄 Новая игра</button>
+                <button class="leave-btn" onclick="leaveRoom()">🚪 Выйти</button>
+            </div>
+
+            <div class="message" id="message"></div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const BOARD_SIZE = 10;
+        const WIN_LENGTH = 4;
+
+        let currentRoomId = null;
+        let playerRole = null; // 'X' или 'O'
+        let currentPlayer = 'X';
+        let board = [];
+        let gameOver = false;
+        let isMyTurn = false;
+        let previewCol = null; // Колонка для предпросмотра хода
+        let previewRow = null; // Строка для предпросмотра хода
+
+        // Инициализация доски
+        function initBoard() {
+            board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
+        }
+
+        // Показать экран выбора режима
+        function showModeSelection() {
+            document.getElementById('modeSelection').classList.remove('hidden');
+            document.getElementById('joinRoomScreen').classList.add('hidden');
+            document.getElementById('waitingScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.add('hidden');
+        }
+
+        // Показать экран ввода кода
+        function showJoinScreen() {
+            document.getElementById('modeSelection').classList.add('hidden');
+            document.getElementById('joinRoomScreen').classList.remove('hidden');
+        }
+
+        // Создание комнаты
+        function createRoom() {
+            socket.emit('createRoom');
+        }
+
+        // Присоединение к комнате
+        function joinRoom() {
+            const roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+            if (roomCode) {
+                socket.emit('joinRoom', roomCode);
+            }
+        }
+
+        // Выход из комнаты
+        function leaveRoom() {
+            socket.disconnect();
+            window.location.reload();
+        }
+
+        // Копирование ссылки (ИСПРАВЛЕНО: добавлен параметр event)
+        function copyLink(event) {
+            const link = document.getElementById('shareLink').textContent;
+            navigator.clipboard.writeText(link).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Скопировано!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        // Обработка создания комнаты
+        socket.on('roomCreated', ({ roomId, role }) => {
+            console.log('=== КОМНАТА СОЗДАНА ===');
+            console.log('roomId:', roomId, 'role:', role);
+            
+            currentRoomId = roomId;
+            playerRole = role;
+            
+            // Инициализируем игру для первого игрока
+            board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
+            currentPlayer = 'X';
+            gameOver = false;
+            
+            console.log('Инициализация: playerRole=', playerRole, 'currentPlayer=', currentPlayer);
+            
+            document.getElementById('modeSelection').classList.add('hidden');
+            document.getElementById('waitingScreen').classList.remove('hidden');
+            document.getElementById('displayRoomCode').textContent = roomId;
+            
+            const link = `${window.location.origin}?room=${roomId}`;
+            document.getElementById('shareLink').textContent = link;
+        });
+
+        // Обработка присоединения к комнате
+        socket.on('roomJoined', ({ roomId, role }) => {
+            console.log('=== ПРИСОЕДИНЕНИЕ К КОМНАТЕ ===');
+            console.log('roomId:', roomId, 'role:', role);
+            
+            currentRoomId = roomId;
+            playerRole = role;
+            
+            // Инициализируем игру для второго игрока
+            board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
+            currentPlayer = 'X';
+            gameOver = false;
+            
+            console.log('Инициализация: playerRole=', playerRole, 'currentPlayer=', currentPlayer);
+            
+            document.getElementById('joinRoomScreen').classList.add('hidden');
+            document.getElementById('waitingScreen').classList.remove('hidden');
+            document.getElementById('displayRoomCode').textContent = roomId;
+        });
+
+        // Начало игры
+        socket.on('gameStart', (data) => {
+            console.log('=== ИГРА НАЧИНАЕТСЯ ===');
+            console.log('Данные с сервера:', data);
+            
+            board = data.board;
+            currentPlayer = data.currentPlayer;
+            gameOver = false;
+            
+            console.log('playerRole:', playerRole);
+            console.log('currentPlayer:', currentPlayer);
+            console.log('isMyTurn будет:', currentPlayer === playerRole);
+            
+            document.getElementById('waitingScreen').classList.add('hidden');
+            document.getElementById('gameScreen').style.display = 'block';
+            
+            updatePlayerInfo();
+            renderBoard();
+            updateTurnStatus();
+            
+            console.log('После updateTurnStatus - isMyTurn:', isMyTurn);
+        });
+
+        // Обновление информации об игроке
+        function updatePlayerInfo() {
+            const badge = document.getElementById('playerRoleBadge');
+            badge.textContent = playerRole;
+            badge.className = `role-badge role-${playerRole.toLowerCase()}`;
+        }
+
+        // Обновление статуса хода
+        function updateTurnStatus() {
+            isMyTurn = currentPlayer === playerRole;
+            
+            const turnInfo = document.getElementById('turnInfo');
+            const statusIndicator = document.getElementById('statusIndicator');
+            const previewInfo = document.getElementById('previewInfo');
+            const confirmBtn = document.getElementById('confirmMoveBtn');
+            
+            // Сбрасываем предпросмотр
+            previewCol = null;
+            previewRow = null;
+            confirmBtn.classList.add('hidden');
+            
+            if (isMyTurn) {
+                turnInfo.textContent = `Ход: ${currentPlayer} (ваш ход)`;
+                statusIndicator.textContent = '🎯 Ваш ход!';
+                statusIndicator.className = 'status-indicator status-your-turn';
+                previewInfo.textContent = 'Выберите колонку для хода';
+            } else {
+                turnInfo.textContent = `Ход: ${currentPlayer} (ход соперника)`;
+                statusIndicator.textContent = '⏳ Ожидание...';
+                statusIndicator.className = 'status-indicator status-opponent-turn';
+                previewInfo.textContent = 'Ожидание хода соперника...';
+            }
+        }
+
+        // Отрисовка доски
+        function renderBoard() {
+            const boardElement = document.getElementById('board');
+            boardElement.innerHTML = '';
+            
+            console.log('=== РЕНДЕР ДОСКИ ===');
+            console.log('gameOver:', gameOver, 'isMyTurn:', isMyTurn);
+
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    
+                    if (board[row][col]) {
+                        cell.classList.add('filled', board[row][col].toLowerCase());
+                        cell.textContent = board[row][col];
+                    }
+                    
+                    // Показываем предпросмотр
+                    if (previewRow !== null && previewCol !== null && row === previewRow && col === previewCol) {
+                        cell.classList.add('preview');
+                        cell.textContent = playerRole;
+                    }
+                    
+                    if (!gameOver && isMyTurn) {
+                        cell.addEventListener('click', () => previewMove(col));
+                        if (row === 0 && col === 0) {
+                            console.log('Обработчик клика добавлен для ячейки [0,0]');
+                        }
+                    } else {
+                        cell.classList.add('disabled');
+                        if (row === 0 && col === 0) {
+                            console.log('Ячейка [0,0] отключена. gameOver:', gameOver, 'isMyTurn:', isMyTurn);
+                        }
+                    }
+                    
+                    boardElement.appendChild(cell);
+                }
+            }
+        }
+
+        // Предпросмотр хода
+        function previewMove(col) {
+            console.log('previewMove вызван для колонки:', col);
+            console.log('gameOver:', gameOver, 'isMyTurn:', isMyTurn);
+            
+            if (gameOver || !isMyTurn) {
+                console.log('Ход заблокирован: gameOver=', gameOver, 'isMyTurn=', isMyTurn);
+                return;
+            }
+            
+            // Находим самую нижнюю свободную ячейку
+            let row = -1;
+            for (let r = BOARD_SIZE - 1; r >= 0; r--) {
+                if (board[r][col] === null) {
+                    row = r;
+                    break;
+                }
+            }
+            
+            console.log('Найдена строка:', row);
+            
+            // Если колонка заполнена
+            if (row === -1) {
+                document.getElementById('previewInfo').textContent = '❌ Колонка заполнена! Выберите другую';
+                return;
+            }
+            
+            // Сохраняем предпросмотр
+            previewCol = col;
+            previewRow = row;
+            
+            console.log('Предпросмотр установлен:', previewRow, previewCol);
+            
+            // Показываем кнопку подтверждения
+            document.getElementById('previewInfo').textContent = `Вы выбрали колонку ${col + 1}. Подтвердите ход!`;
+            document.getElementById('confirmMoveBtn').classList.remove('hidden');
+            
+            renderBoard();
+        }
+
+        // Подтверждение хода
+        function confirmMove() {
+            if (previewCol === null || previewRow === null) return;
+            
+            // Отправляем ход на сервер
+            socket.emit('makeMove', { roomId: currentRoomId, col: previewCol });
+            
+            // Скрываем кнопку и очищаем предпросмотр
+            document.getElementById('confirmMoveBtn').classList.add('hidden');
+            document.getElementById('previewInfo').textContent = 'Ожидание хода соперника...';
+            previewCol = null;
+            previewRow = null;
+        }
+
+        // Обработка хода
+        socket.on('moveMade', (data) => {
+            board = data.board;
+            currentPlayer = data.currentPlayer;
+            renderBoard();
+            updateTurnStatus();
+        });
+
+        // Конец игры
+        socket.on('gameOver', (data) => {
+            board = data.board;
+            gameOver = true;
+            renderBoard();
+            
+            if (data.winningCells) {
+                highlightWinningCells(data.winningCells);
+                
+                if (data.winner === playerRole) {
+                    showMessage('🎉 Вы победили!', 'win');
+                } else {
+                    showMessage('😔 Вы проиграли', 'lose');
+                }
+            } else {
+                showMessage('🤝 Ничья!', 'draw');
+            }
+        });
+
+        // Подсветка выигрышных ячеек
+        function highlightWinningCells(cells) {
+            cells.forEach(([row, col]) => {
+                const cellElement = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                if (cellElement) {
+                    cellElement.classList.add('winning');
+                }
+            });
+        }
+
+        // Показать сообщение
+        function showMessage(text, className = '') {
+            const messageElement = document.getElementById('message');
+            messageElement.textContent = text;
+            messageElement.className = `message ${className}`;
+        }
+
+        // Перезапуск игры
+        function resetGame() {
+            if (currentRoomId) {
+                socket.emit('resetGame', currentRoomId);
+            }
+        }
+
+        // Обработка сброса игры
+        socket.on('gameReset', (data) => {
+            board = data.board;
+            currentPlayer = data.currentPlayer;
+            gameOver = false;
+            renderBoard();
+            updateTurnStatus();
+            showMessage('');
+        });
+
+        // Отключение игрока
+        socket.on('playerDisconnected', (data) => {
+            showMessage('⚠️ ' + (data.message || 'Соперник отключился'), 'lose');
+            // Не перезагружаем страницу автоматически, даем игроку решить
+        });
+
+        // Обработка ошибок
+        socket.on('error', (message) => {
+            alert(message);
+        });
+
+        // Автоматическое присоединение по ссылке
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const roomId = urlParams.get('room');
+            
+            if (roomId) {
+                document.getElementById('roomCodeInput').value = roomId;
+                socket.emit('joinRoom', roomId);
+            }
+        });
+
+        initBoard();
+    </script>
+</body>
+</html>
